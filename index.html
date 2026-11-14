@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Engineering Work Manager | The IBN SINA Pharmaceutical Industry PLC</title>
+  <meta name="description" content="Personal Engineering Work Management & Utility Monitoring PWA for Pharmaceutical Engineering Operations.">
+  <meta name="theme-color" content="#0f4c81">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EngManager">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  
+  <!-- Inline SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f4c81'/%3E%3Cpath d='M50 22a6 6 0 0 1 6 6v5.2a20 20 0 0 1 8.8 3.7l3.7-3.7a6 6 0 0 1 8.5 8.5l-3.7 3.7a20 20 0 0 1 3.7 8.8H82a6 6 0 0 1 0 12h-5.2a20 20 0 0 1-3.7 8.8l3.7 3.7a6 6 0 0 1-8.5 8.5l-3.7-3.7a20 20 0 0 1-8.8 3.7V82a6 6 0 0 1-12 0v-5.2a20 20 0 0 1-8.8-3.7l-3.7 3.7a6 6 0 0 1-8.5-8.5l3.7-3.7a20 20 0 0 1-3.7-8.8H18a6 6 0 0 1 0-12h5.2a20 20 0 0 1 3.7-8.8l-3.7-3.7a6 6 0 0 1 8.5-8.5l3.7 3.7a20 20 0 0 1 8.8-3.7V28a6 6 0 0 1 6-6zm0 18a10 10 0 1 0 0 20 10 10 0 0 0 0-20z' fill='%23ffffff'/%3E%3C/svg%3E">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+
+  <!-- External CDN Libraries for PDF and Image Export (with graceful fallback handled in JS) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Desktop Sidebar / Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>EngManager</h1>
+          <span>IBN SINA Pharma Eng.</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <button class="nav-item active" data-view="dashboard">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="tasks">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <span>My Tasks</span>
+        </button>
+        <button class="nav-item" data-view="monitoring">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 4 18 3-9h6"></path></svg>
+          <span>Monitoring</span>
+        </button>
+        <button class="nav-item" data-view="updates">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          <span>Work Update</span>
+        </button>
+        <button class="nav-item" data-view="pending">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Pending</span>
+          <span class="nav-badge" id="navPendingBadge">0</span>
+        </button>
+        <button class="nav-item" data-view="reports">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Reports</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="engineer-badge">
+          <div class="avatar">AH</div>
+          <div class="engineer-info">
+            <strong id="sidebarEngineerName">Arafat Hossain</strong>
+            <span id="sidebarDepartment">Engineering Dept.</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="currentDateDisplay" class="date-subtitle"></p>
+        </div>
+        <div class="header-actions">
+          <button id="installPwaBtn" class="btn btn-outline btn-sm hidden" title="Install App">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Install</span>
+          </button>
+          <button id="quickAddTaskBtn" class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>New Task</span>
+          </button>
+          <button id="themeToggleBtn" class="icon-btn" aria-label="Toggle Dark/Light Theme" title="Toggle Theme">
+            <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Views Container -->
+      <main class="content-area">
+
+        <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="view-section active">
+          <!-- Smart Priority Recommendation Banner -->
+          <div class="smart-recommendation-card" id="smartRecommendationBox">
+            <div class="rec-header">
+              <span class="rec-badge">SMART PRIORITY ENGINE</span>
+              <span class="rec-score" id="recReasonTag">Evaluating Queue...</span>
+            </div>
+            <h3 id="recTaskTitle">Recommended Next Task: Loading...</h3>
+            <p id="recTaskExplanation">Analyzing task urgency, deadlines, blocking dependencies, and active plant priorities.</p>
+            <div class="rec-actions" id="recActionButtons"></div>
+          </div>
+
+          <!-- KPI Summary Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card kpi-blue" data-goto="tasks" data-filter="all">
+              <div class="kpi-label">Total Tasks</div>
+              <div class="kpi-value" id="statTotalTasks">0</div>
+              <div class="kpi-sub">All active & archived</div>
+            </div>
+            <div class="kpi-card kpi-green" data-goto="tasks" data-filter="Completed">
+              <div class="kpi-label">Completed</div>
+              <div class="kpi-value" id="statCompletedTasks">0</div>
+              <div class="kpi-sub"><span id="statCompletedToday">0</span> done today</div>
+            </div>
+            <div class="kpi-card kpi-indigo" data-goto="tasks" data-filter="In Progress">
+              <div class="kpi-label">In Progress</div>
+              <div class="kpi-value" id="statInProgressTasks">0</div>
+              <div class="kpi-sub">Active execution</div>
+            </div>
+            <div class="kpi-card kpi-amber" data-goto="pending">
+              <div class="kpi-label">Pending</div>
+              <div class="kpi-value" id="statPendingTasks">0</div>
+              <div class="kpi-sub">Awaiting follow-up</div>
+            </div>
+            <div class="kpi-card kpi-red" data-goto="tasks" data-filter="Overdue">
+              <div class="kpi-label">Overdue</div>
+              <div class="kpi-value" id="statOverdueTasks">0</div>
+              <div class="kpi-sub">Past deadline</div>
+            </div>
+            <div class="kpi-card kpi-teal" data-goto="monitoring">
+              <div class="kpi-label">Monitoring</div>
+              <div class="kpi-value" id="statMonitoringCount">0</div>
+              <div class="kpi-sub">Contractor / Site logs</div>
+            </div>
+          </div>
+
+          <!-- Charts & Progress Row -->
+          <div class="dashboard-Grid-2">
+            <!-- Completion Progress & Priority Breakdown -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Task Completion & Priority Distribution</h3>
+                <span class="badge badge-primary" id="completionRateBadge">0% Complete</span>
+              </div>
+              <div class="progress-bar-outer">
+                <div class="progress-bar-inner" id="overallProgressBar" style="width: 0%"></div>
+              </div>
+              <div class="priority-bars" id="priorityDistributionChart">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Smart Priority Buckets Overview -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Smart Action Matrix</h3>
+                <button class="btn-link" data-goto="tasks">View All</button>
+              </div>
+              <div class="bucket-tabs" id="dashboardBucketTabs">
+                <button class="bucket-tab active" data-bucket="doFirst">1. Do First (<span id="countDoFirst">0</span>)</button>
+                <button class="bucket-tab" data-bucket="doToday">2. Do Today (<span id="countDoToday">0</span>)</button>
+                <button class="bucket-tab" data-bucket="upcoming">3. Upcoming (<span id="countUpcoming">0</span>)</button>
+                <button class="bucket-tab" data-bucket="followup">4. Follow-up (<span id="countFollowup">0</span>)</button>
+                <button class="bucket-tab" data-bucket="monitoring">5. Monitoring (<span id="countBucketMon">0</span>)</button>
+              </div>
+              <div class="bucket-list" id="dashboardBucketList"></div>
+            </div>
+          </div>
+
+          <!-- Deadlines & Recent Updates Row -->
+          <div class="dashboard-Grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h3>Upcoming Deadlines</h3>
+              </div>
+              <div class="compact-list" id="upcomingDeadlinesList"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Today's Completed & Recent Activity</h3>
+              </div>
+              <div class="compact-list" id="recentUpdatedList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 2: MY TASKS ==================== -->
+        <section id="view-tasks" class="view-section">
+          <div class="section-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="search" id="taskSearchInput" placeholder="Search tasks, equipment, area, contractor...">
+            </div>
+            <div class="filter-group">
+              <select id="taskFilterBucket" aria-label="Filter by Smart Bucket">
+                <option value="all">All Smart Buckets</option>
+                <option value="doFirst">1. Do First (Critical/Urgent)</option>
+                <option value="doToday">2. Do Today</option>
+                <option value="upcoming">3. Upcoming</option>
+                <option value="followup">4. Pending Follow-up</option>
+                <option value="monitoring">5. Monitoring Tasks</option>
+              </select>
+              <select id="taskFilterStatus" aria-label="Filter by Status">
+                <option value="all">All Statuses</option>
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Pending">Pending</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Completed">Completed</option>
+                <option value="Overdue">Overdue Only</option>
+              </select>
+              <select id="taskFilterPriority" aria-label="Filter by Priority">
+                <option value="all">All Priorities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+              <select id="taskFilterCategory" aria-label="Filter by Category">
+                <option value="all">All Categories</option>
+              </select>
+              <button class="btn btn-primary" id="openNewTaskModalBtn">+ Add Task</button>
+            </div>
+          </div>
+
+          <div id="tasksContainer" class="cards-list"></div>
+        </section>
+
+        <!-- ==================== VIEW 3: WORK MONITORING ==================== -->
+        <section id="view-monitoring" class="view-section">
+          <div class="section-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="search" id="monitoringSearchInput" placeholder="Search monitored projects, locations, contractors...">
+            </div>
+            <div class="filter-group">
+              <select id="monitoringFilterStatus" aria-label="Filter Monitoring Status">
+                <option value="all">All Statuses</option>
+                <option value="Not Started">Not Started</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Waiting for Material">Waiting for Material</option>
+                <option value="Waiting for Approval">Waiting for Approval</option>
+                <option value="Correction Required">Correction Required</option>
+                <option value="Completed">Completed</option>
+              </select>
+              <button class="btn btn-primary" id="openNewMonitoringBtn">+ New Monitored Work</button>
+            </div>
+          </div>
+
+          <div id="monitoringContainer" class="cards-list"></div>
+        </section>
+
+        <!-- ==================== VIEW 4: DAILY WORK UPDATE ==================== -->
+        <section id="view-updates" class="view-section">
+          <div class="dashboard-Grid-2">
+            <!-- Quick Entry Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3 id="workUpdateFormTitle">Log Daily Work Update</h3>
+                <button type="button" class="btn btn-outline btn-sm" id="autoFillUpdateBtn" title="Pull today's activity from tasks & monitoring">Auto-Pull Today's Data</button>
+              </div>
+              <form id="workUpdateForm" class="stacked-form">
+                <input type="hidden" id="updateId">
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="updateDate">Date *</label>
+                    <input type="date" id="updateDate" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="updateShift">Shift / Log Label</label>
+                    <input type="text" id="updateShift" placeholder="e.g., General Shift / Morning Log">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="updateCompleted">Completed Activities *</label>
+                  <textarea id="updateCompleted" rows="3" placeholder="One activity per line (e.g., Inspected AHU-04 differential pressure gauge)" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="updateOngoing">Ongoing Activities</label>
+                  <textarea id="updateOngoing" rows="2" placeholder="Activities currently in progress..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="updateMonitoring">Monitoring Activities</label>
+                  <textarea id="updateMonitoring" rows="2" placeholder="Contractor or utility monitoring checks..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="updatePending">Pending Activities</label>
+                  <textarea id="updatePending" rows="2" placeholder="Tasks waiting for spares, shutdown, or approval..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="updateProblems">Problems / Observations</label>
+                  <textarea id="updateProblems" rows="2" placeholder="Any abnormalities, leaks, vibration, pressure drops..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="updateRemarks">Additional Remarks / Next Plan</label>
+                  <textarea id="updateRemarks" rows="2" placeholder="Notes for handover or supervisor..."></textarea>
+                </div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-outline hidden" id="cancelUpdateEditBtn">Cancel Edit</button>
+                  <button type="submit" class="btn btn-primary">Save Work Update</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Recorded Updates History -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Recorded Daily Updates</h3>
+                <input type="date" id="filterUpdateDate" class="input-sm" aria-label="Filter updates by date">
+              </div>
+              <div id="workUpdatesList" class="cards-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 5: PENDING WORK ==================== -->
+        <section id="view-pending" class="view-section">
+          <div class="section-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="search" id="pendingSearchInput" placeholder="Search pending items, reasons, responsible person...">
+            </div>
+            <div class="filter-group">
+              <select id="pendingFilterOverdue" aria-label="Filter Pending Items">
+                <option value="all">All Pending Items</option>
+                <option value="overdue">Overdue Follow-ups Only</option>
+              </select>
+              <button class="btn btn-primary" id="openNewPendingBtn">+ Add Pending Record</button>
+            </div>
+          </div>
+          <div id="pendingListContainer" class="cards-list"></div>
+        </section>
+
+        <!-- ==================== VIEW 6: REPORTS ==================== -->
+        <section id="view-reports" class="view-section">
+          <!-- Report Generator Controls (Hidden in Print) -->
+          <div class="card report-controls-card no-print">
+            <div class="card-header">
+              <h3>Configure Official Engineering Report</h3>
+              <span class="text-muted">A4 Portrait Layout</span>
+            </div>
+            <div class="form-row-4">
+              <div class="form-group">
+                <label for="reportTypeSelect">Report Period Type</label>
+                <select id="reportTypeSelect">
+                  <option value="daily">Daily Work Report</option>
+                  <option value="weekly">Weekly Engineering Report</option>
+                  <option value="monthly">Monthly Engineering Report</option>
+                  <option value="custom">Custom Date Range Report</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="reportStartDate">Start Date</label>
+                <input type="date" id="reportStartDate">
+              </div>
+              <div class="form-group">
+                <label for="reportEndDate">End Date</label>
+                <input type="date" id="reportEndDate">
+              </div>
+              <div class="form-group">
+                <label for="reportCustomTitle">Report Title</label>
+                <input type="text" id="reportCustomTitle" value="Daily Engineering Work & Monitoring Report">
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="reportObservationsInput">Key Observations Override / Summary Note (Optional)</label>
+                <textarea id="reportObservationsInput" rows="2" placeholder="Add specific highlights or critical plant observations for management..."></textarea>
+              </div>
+              <div class="form-group">
+                <label for="reportNextPlanInput">Next Action Plan (Optional Override)</label>
+                <textarea id="reportNextPlanInput" rows="2" placeholder="Outline next shift/week engineering execution plan..."></textarea>
+              </div>
+            </div>
+            <div class="report-action-bar">
+              <button class="btn btn-primary" id="generateReportPreviewBtn">Refresh Preview</button>
+              <button class="btn btn-success" id="downloadPdfBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span>Download PDF</span>
+              </button>
+              <button class="btn btn-indigo" id="downloadPngBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span>Download PNG</span>
+              </button>
+              <button class="btn btn-outline" id="printReportBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Print / Save PDF</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- A4 Report Preview Container -->
+          <div class="report-preview-scroll">
+            <div id="a4ReportSheet" class="a4-sheet">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 7: SETTINGS & BACKUP ==================== -->
+        <section id="view-settings" class="view-section">
+          <div class="dashboard-Grid-2">
+            <!-- Profile & Report Header Settings -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Engineer Profile & Organization</h3>
+              </div>
+              <form id="settingsProfileForm" class="stacked-form">
+                <div class="form-group">
+                  <label for="settingCompany">Company Heading</label>
+                  <input type="text" id="settingCompany" value="The IBN SINA Pharmaceutical Industry PLC" required>
+                </div>
+                <div class="form-group">
+                  <label for="settingDepartment">Department / Plant Unit</label>
+                  <input type="text" id="settingDepartment" value="Engineering Department" required>
+                </div>
+                <div class="form-group">
+                  <label for="settingEngineerName">Prepared By (Name)</label>
+                  <input type="text" id="settingEngineerName" value="Arafat Hossain" required>
+                </div>
+                <div class="form-group">
+                  <label for="settingDesignation">Designation</label>
+                  <input type="text" id="settingDesignation" value="Engineer, Engineering Department">
+                </div>
+                <div class="form-group">
+                  <label for="settingSupervisor">Supervisor / Submitted To</label>
+                  <input type="text" id="settingSupervisor" value="Senior Engineer / Head of Engineering">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Profile Settings</button>
+              </form>
+            </div>
+
+            <!-- Custom Categories Management -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Engineering Categories</h3>
+              </div>
+              <form id="addCategoryForm" class="inline-form">
+                <input type="text" id="newCategoryInput" placeholder="Add custom category (e.g., BMS, Steam Trap)..." required>
+                <button type="submit" class="btn btn-primary">Add</button>
+              </form>
+              <div id="categoriesTagsList" class="tags-container"></div>
+            </div>
+          </div>
+
+          <!-- Data Storage, Backup & Restore -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Local Database Backup & Restore (IndexedDB)</h3>
+            </div>
+            <div class="storage-notice">
+              <strong>Important Data Notice:</strong> All application data is stored locally on this specific browser and device using IndexedDB for 100% offline privacy and speed. Before switching phones, clearing browser cache, or reinstalling your browser, always export a JSON backup file.
+            </div>
+            <div class="backup-actions-grid">
+              <div class="backup-box">
+                <h4>Export Full Backup (JSON)</h4>
+                <p>Download all tasks, monitoring logs, daily updates, and settings into a portable JSON file.</p>
+                <button class="btn btn-primary" id="exportJsonBtn">Export Backup (.json)</button>
+              </div>
+              <div class="backup-box">
+                <h4>Restore / Import Backup (JSON)</h4>
+                <p>Restore data from a previously exported JSON backup file.</p>
+                <label class="btn btn-outline file-upload-btn">
+                  <span>Select JSON File to Import</span>
+                  <input type="file" id="importJsonInput" accept=".json,application/json" hidden>
+                </label>
+              </div>
+              <div class="backup-box">
+                <h4>Load Sample Pharma Engineering Data</h4>
+                <p>Populate realistic HVAC, Chiller, PW System, and Boiler tasks for testing.</p>
+                <button class="btn btn-outline" id="seedDemoDataBtn">Reload Sample Data</button>
+              </div>
+              <div class="backup-box danger-box">
+                <h4>Factory Reset Local Database</h4>
+                <p>Permanently erase all records from this browser.</p>
+                <button class="btn btn-danger" id="clearAllDataBtn">Erase All Data</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav no-print" aria-label="Mobile Navigation">
+      <button class="bottom-nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>Home</span>
+      </button>
+      <button class="bottom-nav-item" data-view="tasks">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <span>Tasks</span>
+      </button>
+      <button class="bottom-nav-item" data-view="monitoring">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 4 18 3-9h6"></path></svg>
+        <span>Monitor</span>
+      </button>
+      <button class="bottom-nav-item" data-view="updates">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        <span>Log</span>
+      </button>
+      <button class="bottom-nav-item" data-view="pending">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>Pending</span>
+      </button>
+      <button class="bottom-nav-item" data-view="reports">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Report</span>
+      </button>
+      <button class="bottom-nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Setup</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ==================== MODAL 1: CREATE / EDIT TASK ==================== -->
+  <div class="modal-overlay hidden" id="taskModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="taskModalTitle">Add Engineering Task</h3>
+        <button class="icon-btn" data-close-modal="taskModal">&times;</button>
+      </div>
+      <form id="taskForm" class="stacked-form">
+        <input type="hidden" id="taskId">
+        <div class="form-group">
+          <label for="taskTitle">Task Title *</label>
+          <input type="text" id="taskTitle" placeholder="e.g., Inspect HVAC AHU-02 HEPA Filter ΔP" required>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="taskCategory">Engineering Category *</label>
+            <select id="taskCategory" required></select>
+          </div>
+          <div class="form-group">
+            <label for="taskArea">Department / Work Area *</label>
+            <input type="text" id="taskArea" placeholder="e.g., OSD Block, Utility Building, Warehouse" required>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="taskPriority">Priority *</label>
+            <select id="taskPriority" required>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="taskStatus">Status *</label>
+            <select id="taskStatus" required>
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Pending">Pending</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="taskExecutionType">Work Mode *</label>
+            <select id="taskExecutionType">
+              <option value="direct">Direct Execution</option>
+              <option value="followup">Waiting / Follow-up</option>
+              <option value="monitoring">Observation / Monitoring Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="taskCreatedDate">Created Date</label>
+            <input type="date" id="taskCreatedDate" required>
+          </div>
+          <div class="form-group">
+            <label for="taskDeadline">Deadline *</label>
+            <input type="date" id="taskDeadline" required>
+          </div>
+          <div class="form-group">
+            <label for="taskAssigned">Assigned Person / Contractor</label>
+            <input type="text" id="taskAssigned" placeholder="e.g., Technician Rahim / CoolTech">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="taskIsBlocking">
+            <span><strong>Blocking / Dependency Task:</strong> Other plant operations or tasks depend on completing this first.</span>
+          </label>
+        </div>
+        <div class="form-group" id="pendingReasonGroup">
+          <label for="taskPendingReason">Reason for Pending / Follow-up Date (If Status is Pending)</label>
+          <div class="form-row-2">
+            <input type="text" id="taskPendingReason" placeholder="e.g., Waiting for spare mechanical seal">
+            <input type="date" id="taskFollowupDate" title="Next Follow-up Date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="taskDescription">Detailed Description</label>
+          <textarea id="taskDescription" rows="2" placeholder="Technical details, SOP reference, parameters..."></textarea>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="taskRemarks">Remarks / Root Cause</label>
+            <input type="text" id="taskRemarks" placeholder="Observations or completion notes...">
+          </div>
+          <div class="form-group">
+            <label for="taskAttachment">Attachment Note / Photo (Optional)</label>
+            <input type="file" id="taskAttachment" accept="image/*,.pdf">
+            <small id="taskAttachmentCurrent" class="text-muted"></small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="taskModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: CREATE / EDIT MONITORING RECORD ==================== -->
+  <div class="modal-overlay hidden" id="monitoringModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="monitoringModalTitle">Work Monitoring Record</h3>
+        <button class="icon-btn" data-close-modal="monitoringModal">&times;</button>
+      </div>
+      <form id="monitoringForm" class="stacked-form">
+        <input type="hidden" id="monId">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="monProjectName">Work / Project Name *</label>
+            <input type="text" id="monProjectName" placeholder="e.g., Warehouse HVAC Duct Insulation Work" required>
+          </div>
+          <div class="form-group">
+            <label for="monLocation">Location / Area *</label>
+            <input type="text" id="monLocation" placeholder="e.g., Raw Material Warehouse - Level 2" required>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="monContractor">Contractor / Responsible Person *</label>
+            <input type="text" id="monContractor" placeholder="e.g., ThermoEng Contractors / Mr. Karim" required>
+          </div>
+          <div class="form-group">
+            <label for="monDate">Monitoring Date *</label>
+            <input type="date" id="monDate" required>
+          </div>
+          <div class="form-group">
+            <label for="monFollowupDate">Next Follow-up Date *</label>
+            <input type="date" id="monFollowupDate" required>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="monStatus">Monitoring Status *</label>
+            <select id="monStatus" required>
+              <option value="Not Started">Not Started</option>
+              <option value="Ongoing" selected>Ongoing</option>
+              <option value="Waiting for Material">Waiting for Material</option>
+              <option value="Waiting for Approval">Waiting for Approval</option>
+              <option value="Correction Required">Correction Required</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="monProgress">Current Progress (<span id="monProgressVal">50</span>%)</label>
+            <input type="range" id="monProgress" min="0" max="100" step="5" value="50">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="monDescription">Work Scope / Description</label>
+          <textarea id="monDescription" rows="2" placeholder="Scope of contractor/technician work..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="monObservation">Site Observation *</label>
+          <textarea id="monObservation" rows="2" placeholder="What was observed during inspection?" required></textarea>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="monProblems">Problems / Deviations / Issues</label>
+            <textarea id="monProblems" rows="2" placeholder="Any quality issue, safety concern, or delay..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="monAction">Required Action</label>
+            <textarea id="monAction" rows="2" placeholder="Instruction given to contractor/technician..."></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="monRemarks">Remarks</label>
+          <input type="text" id="monRemarks" placeholder="Additional remarks...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="monitoringModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Monitoring Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: ADD PROGRESS CHECK-IN LOG TO MONITORED PROJECT ==================== -->
+  <div class="modal-overlay hidden" id="monitoringLogModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="monLogModalTitle">Add Inspection Follow-up Update</h3>
+        <button class="icon-btn" data-close-modal="monitoringLogModal">&times;</button>
+      </div>
+      <form id="monitoringLogForm" class="stacked-form">
+        <input type="hidden" id="monLogParentId">
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="monLogDate">Inspection Date *</label>
+            <input type="date" id="monLogDate" required>
+          </div>
+          <div class="form-group">
+            <label for="monLogStatus">Updated Status *</label>
+            <select id="monLogStatus" required>
+              <option value="Not Started">Not Started</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Waiting for Material">Waiting for Material</option>
+              <option value="Waiting for Approval">Waiting for Approval</option>
+              <option value="Correction Required">Correction Required</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="monLogProgress">New Progress (<span id="monLogProgressVal">60</span>%)</label>
+            <input type="range" id="monLogProgress" min="0" max="100" step="5" value="60">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="monLogObservation">Observation *</label>
+          <textarea id="monLogObservation" rows="2" placeholder="Progress update observed on site..." required></textarea>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="monLogProblems">Problems / Issues</label>
+            <input type="text" id="monLogProblems" placeholder="Issues noticed today...">
+          </div>
+          <div class="form-group">
+            <label for="monLogAction">Required Action</label>
+            <input type="text" id="monLogAction" placeholder="Next action required...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="monLogNextDate">Next Follow-up Date *</label>
+          <input type="date" id="monLogNextDate" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="monitoringLogModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Append Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main Application Script -->
+  <script src="./app.js"></script>
+</body>
+</html>
