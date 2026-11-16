@@ -1,25 +1,25 @@
 /**
  * Personal Engineering Work Manager - Complete Application Logic
  * Engineered for: Arafat Hossain | The IBN SINA Pharmaceutical Industry PLC
- * Storage: IndexedDB with automatic LocalStorage fallback & JSON Backup/Restore
+ * Storage: Firebase Firestore Cloud Database
  */
 
 (function () {
   'use strict';
 
-  const DB_NAME = 'IbnSinaEngManagerDB';
-  const DB_VERSION = 1;
-
   const DEFAULT_CATEGORIES = [
     'Chiller & Cooling System',
-    'HVAC / AHU / FCU / FAU / DHU',
+    'RDS',
+    'URS',
+    'SOP',
+    'HVAC',
     'Air Compressor',
     'Boiler',
     'Purified Water System',
     'Soft Water System',
     'Warehouse Monitoring',
     'Electrical & Utility',
-    'URS / Documentation',
+    'Documentation',
     'Equipment Maintenance',
     'General Engineering Work'
   ];
@@ -29,8 +29,8 @@
     company: 'The IBN SINA Pharmaceutical Industry PLC',
     department: 'Engineering Department',
     engineerName: 'Arafat Hossain',
-    designation: 'Engineer, Engineering Department',
-    supervisor: 'Senior Engineer / Head of Engineering',
+    designation: 'Executive, Engineering',
+    supervisor: 'Manager, Engineering',
     theme: 'light',
     categories: DEFAULT_CATEGORIES
   };
@@ -104,305 +104,82 @@
     }, 3200);
   }
 
-  // ==================== INDEXEDDB STORAGE ENGINE ====================
-  let dbInstance = null;
+  // ==================== FIREBASE STORAGE ENGINE ====================
+  // Initialize your Firebase configuration here
+  const firebaseConfig = {
+    apiKey: "AIzaSyBiDUds9uvERN44vksMTVG03fKc7gYcYXg",
+    authDomain: "engineering-work-manager-2eeea.firebaseapp.com",
+    projectId: "engineering-work-manager-2eeea",
+    storageBucket: "engineering-work-manager-2eeea.firebasestorage.app",
+    messagingSenderId: "290019671850",
+    appId: "1:290019671850:web:8ebc9785c9eadc16b6a853",
+    measurementId: "G-RJ40NSPBM8"
+  };
 
-  function openDatabase() {
-    return new Promise((resolve, reject) => {
-      if (!window.indexedDB) {
-        reject(new Error('IndexedDB not supported'));
-        return;
-      }
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains('tasks')) {
-          db.createObjectStore('tasks', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('monitoring')) {
-          db.createObjectStore('monitoring', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('updates')) {
-          db.createObjectStore('updates', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('settings')) {
-          db.createObjectStore('settings', { keyPath: 'id' });
-        }
-      };
-      req.onsuccess = (e) => {
-        dbInstance = e.target.result;
-        resolve(dbInstance);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
+  // Start Firebase App
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
   }
+  const db = firebase.firestore();
 
+  /**
+   * Fetch all records from a specific collection in Firestore
+   */
   async function dbGetAll(storeName) {
     try {
-      if (!dbInstance) await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = dbInstance.transaction(storeName, 'readonly');
-        const store = tx.objectStore(storeName);
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => reject(req.error);
+      const snapshot = await db.collection(storeName).get();
+      const items = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data());
       });
+      return items;
     } catch (err) {
-      const raw = localStorage.getItem(`fallback_${storeName}`);
-      return raw ? JSON.parse(raw) : [];
+      console.error(`Error fetching ${storeName}:`, err);
+      return [];
     }
   }
 
+  /**
+   * Add or update a record in Firestore
+   */
   async function dbPut(storeName, item) {
     try {
-      if (!dbInstance) await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = dbInstance.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        const req = store.put(item);
-        req.onsuccess = () => resolve(item);
-        req.onerror = () => reject(req.error);
-      });
-    } catch (err) {
-      const list = await dbGetAll(storeName);
-      const idx = list.findIndex((x) => x.id === item.id);
-      if (idx >= 0) list[idx] = item;
-      else list.push(item);
-      localStorage.setItem(`fallback_${storeName}`, JSON.stringify(list));
+      await db.collection(storeName).doc(item.id).set(item);
       return item;
+    } catch (err) {
+      console.error(`Error saving to ${storeName}:`, err);
     }
   }
 
+  /**
+   * Delete a specific record from Firestore
+   */
   async function dbDelete(storeName, id) {
     try {
-      if (!dbInstance) await openDatabase();
-      return new Promise((resolve, reject) => {
-        const tx = dbInstance.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        const req = store.delete(id);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-      });
+      await db.collection(storeName).doc(id).delete();
     } catch (err) {
-      const list = await dbGetAll(storeName);
-      const filtered = list.filter((x) => x.id !== id);
-      localStorage.setItem(`fallback_${storeName}`, JSON.stringify(filtered));
+      console.error(`Error deleting from ${storeName}:`, err);
     }
   }
 
+  /**
+   * Erase all engineering data from Firestore
+   */
   async function dbClearAll() {
     const stores = ['tasks', 'monitoring', 'updates', 'settings'];
-    for (const s of stores) {
+    
+    for (const store of stores) {
       try {
-        if (dbInstance) {
-          await new Promise((res, rej) => {
-            const tx = dbInstance.transaction(s, 'readwrite');
-            const req = tx.objectStore(s).clear();
-            req.onsuccess = () => res();
-            req.onerror = () => rej(req.error);
-          });
-        }
-      } catch (e) {
-        // ignore
+        const snapshot = await db.collection(store).get();
+        const batch = db.batch(); 
+        snapshot.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+      } catch (err) {
+        console.error(`Error clearing ${store}:`, err);
       }
-      localStorage.removeItem(`fallback_${s}`);
     }
-  }
-
-  // ==================== REALISTIC PHARMA ENGINEERING SAMPLE DATA ====================
-  async function seedSampleDataIfNeeded() {
-    const existingTasks = await dbGetAll('tasks');
-    const existingMon = await dbGetAll('monitoring');
-    const existingUpd = await dbGetAll('updates');
-
-    if (existingTasks.length > 0 || existingMon.length > 0 || existingUpd.length > 0) {
-      return;
-    }
-
-    const t = todayISO();
-    const yesterday = addDaysISO(t, -1);
-    const tomorrow = addDaysISO(t, 1);
-    const in3Days = addDaysISO(t, 3);
-
-    const sampleTasks = [
-      {
-        id: uid('task'),
-        title: 'Follow up on Warehouse HVAC Supply Duct Insulation Repair',
-        description: 'Condensation noticed near Raw Material Warehouse AHU-03 supply plenum. Verify nitrile rubber insulation thickness and vapor barrier sealing.',
-        area: 'Raw Material Warehouse',
-        category: 'Warehouse Monitoring',
-        assigned: 'ThermoCool Contractors',
-        createdDate: yesterday,
-        deadline: t,
-        priority: 'Critical',
-        status: 'In Progress',
-        executionType: 'direct',
-        isBlocking: true,
-        pendingReason: '',
-        followupDate: t,
-        remarks: 'Required before warehouse temperature mapping validation.',
-        attachmentName: '',
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: uid('task'),
-        title: 'Purified Water (PW) Loop Sanitization & Conductivity Verification',
-        description: 'Verify heat sanitization cycle parameters (80°C hold time) and online TOC/conductivity sensor readings.',
-        area: 'Utility Block - PW Plant',
-        category: 'Purified Water System',
-        assigned: 'Utility Operator Hasan',
-        createdDate: yesterday,
-        deadline: t,
-        priority: 'High',
-        status: 'Not Started',
-        executionType: 'direct',
-        isBlocking: false,
-        pendingReason: '',
-        followupDate: '',
-        remarks: 'Routine GMP compliance check.',
-        attachmentName: '',
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: uid('task'),
-        title: 'Chiller-02 Condenser Approach Temperature & Refrigerant Pressure Check',
-        description: 'High approach temperature observed during peak ambient load. Inspect condenser tube fouling status.',
-        area: 'Central Chiller Plant',
-        category: 'Chiller & Cooling System',
-        assigned: 'Technician Mamun',
-        createdDate: yesterday,
-        deadline: tomorrow,
-        priority: 'High',
-        status: 'In Progress',
-        executionType: 'direct',
-        isBlocking: false,
-        pendingReason: '',
-        followupDate: '',
-        remarks: 'Log suction and discharge pressures.',
-        attachmentName: '',
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: uid('task'),
-        title: 'Air Compressor GA-37 VSD Oil Filter & Separator Element Replacement',
-        description: 'Differential pressure across oil separator reached 0.7 bar. Waiting for Atlas Copco genuine spare kit from store.',
-        area: 'Compressed Air Station',
-        category: 'Air Compressor',
-        assigned: 'Central Engineering Store',
-        createdDate: addDaysISO(t, -3),
-        deadline: yesterday,
-        priority: 'High',
-        status: 'Pending',
-        executionType: 'followup',
-        isBlocking: true,
-        pendingReason: 'Waiting for PR approval & spare release from Store',
-        followupDate: t,
-        remarks: 'Follow up with Procurement & Store Officer.',
-        attachmentName: '',
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: uid('task'),
-        title: 'Prepare URS for New Dehumidifier Unit (DHU) in Blister Packing Area',
-        description: 'Draft User Requirement Specification covering 20% RH control at 22°C, PLC HMI, 21 CFR Part 11 compliance.',
-        area: 'OSD Packaging Floor',
-        category: 'URS / Documentation',
-        assigned: 'Arafat Hossain',
-        createdDate: yesterday,
-        deadline: in3Days,
-        priority: 'Medium',
-        status: 'In Progress',
-        executionType: 'direct',
-        isBlocking: false,
-        pendingReason: '',
-        followupDate: '',
-        remarks: 'Review airflow calculation table before submission.',
-        attachmentName: '',
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: uid('task'),
-        title: 'Boiler Feed Water Softener Resin Regeneration & Hardness Test',
-        description: 'Completed brine regeneration cycle and verified outlet water hardness < 5 ppm as CaCO3.',
-        area: 'Boiler House',
-        category: 'Soft Water System',
-        assigned: 'Boiler Operator',
-        createdDate: t,
-        deadline: t,
-        priority: 'Medium',
-        status: 'Completed',
-        executionType: 'direct',
-        isBlocking: false,
-        pendingReason: '',
-        followupDate: '',
-        remarks: 'Hardness tested at 2.4 ppm. Satisfactory.',
-        completedDate: t,
-        attachmentName: '',
-        updatedAt: new Date().toISOString()
-      }
-    ];
-
-    const sampleMonitoring = [
-      {
-        id: uid('mon'),
-        projectName: 'Warehouse HVAC Supply & Return Duct Insulation Rectification',
-        location: 'Raw Material Warehouse - Bay B',
-        contractor: 'ThermoCool Engineering Ltd.',
-        description: 'Replacement of damaged 19mm elastomeric nitrile insulation and aluminum cladding on chilled water & supply air lines.',
-        monitoringDate: t,
-        progress: 65,
-        status: 'Ongoing',
-        observation: '45 meters of supply duct insulated properly; adhesive joint sealing on elbow section needs additional aluminum tape.',
-        problems: 'Minor gap noticed near damper collar.',
-        action: 'Instructed supervisor to seal damper neck before cladding.',
-        followupDate: t,
-        remarks: 'Work permit valid until 18:00.',
-        history: [
-          {
-            date: yesterday,
-            status: 'Ongoing',
-            progress: 40,
-            observation: 'Old damaged insulation stripped and surface cleaned.',
-            problems: 'None',
-            action: 'Proceed with primer and adhesive coat.'
-          }
-        ]
-      },
-      {
-        id: uid('mon'),
-        projectName: 'OSD Cleanroom AHU-05 Magnehelic Gauge & HEPA Integrity Check',
-        location: 'OSD Technical Mezzanine Floor',
-        contractor: 'Internal HVAC Team + Calibration Vendor',
-        description: 'Periodic PAO leak test and differential pressure transmitter verification across EU-7 and EU-13 filters.',
-        monitoringDate: t,
-        progress: 80,
-        status: 'Waiting for Approval',
-        observation: 'All 6 terminal HEPA filters passed PAO scan (<0.01% penetration). QA sign-off pending.',
-        problems: 'One room pressure gauge zero-point drifted by 2 Pa.',
-        action: 'Recalibrated Magnehelic gauge on spot.',
-        followupDate: tomorrow,
-        remarks: 'Submit calibration certificate to QA.',
-        history: []
-      }
-    ];
-
-    const sampleUpdates = [
-      {
-        id: uid('upd'),
-        date: t,
-        shift: 'General Engineering Shift',
-        completed: 'Verified Boiler Softener Water hardness (<5 ppm) after regeneration.\nRecalibrated OSD Cleanroom Magnehelic DP gauge.',
-        ongoing: 'Preparing URS document for Blister Packing Dehumidifier (DHU).\nChiller-02 condenser approach temperature analysis.',
-        monitoring: 'Monitored Warehouse HVAC duct insulation work by ThermoCool Contractors (65% complete).\nObserved AHU-05 HEPA PAO validation with QA.',
-        pending: 'Air Compressor GA-37 oil separator element replacement pending store material release.',
-        problems: 'Chiller-02 condenser approach temperature rose by 1.2°C during afternoon peak ambient temperature.',
-        remarks: 'Plan chemical descaling of Chiller-02 condenser during Friday shutdown.'
-      }
-    ];
-
-    for (const item of sampleTasks) await dbPut('tasks', item);
-    for (const item of sampleMonitoring) await dbPut('monitoring', item);
-    for (const item of sampleUpdates) await dbPut('updates', item);
   }
 
   // ==================== SMART PRIORITY ENGINE ====================
@@ -1968,26 +1745,15 @@
       reader.readAsText(file);
     });
 
-    // Reload Demo Data
-    document.getElementById('seedDemoDataBtn').addEventListener('click', async () => {
-      if (confirm('Load sample pharmaceutical engineering tasks and monitoring records?')) {
-        await dbClearAll();
-        await seedSampleDataIfNeeded();
-        await loadAllState();
-        renderAll();
-        showToast('Sample pharmaceutical engineering data loaded.');
-      }
-    });
-
     // Erase All Data
     document.getElementById('clearAllDataBtn').addEventListener('click', async () => {
-      if (confirm('WARNING: This will permanently erase all tasks, logs, and monitoring data from this browser. Continue?')) {
+      if (confirm('WARNING: This will permanently erase all tasks, logs, and monitoring data from the Firebase database. Continue?')) {
         await dbClearAll();
         state.tasks = [];
         state.monitoring = [];
         state.updates = [];
         renderAll();
-        showToast('All local database records erased.');
+        showToast('All database records erased.');
       }
     });
 
@@ -2010,8 +1776,6 @@
   // ==================== SERVICE WORKER REGISTRATION & BOOTSTRAP ====================
   async function initApp() {
     try {
-      await openDatabase();
-      await seedSampleDataIfNeeded();
       await loadAllState();
     } catch (err) {
       await loadAllState();
