@@ -19,7 +19,7 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="./style.css">
 
-  <!-- External CDN Libraries for PDF and Image Export (with graceful fallback handled in JS) -->
+  <!-- External CDN Libraries for PDF and Image Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </head>
@@ -469,10 +469,10 @@
           <!-- Data Storage, Backup & Restore -->
           <div class="card">
             <div class="card-header">
-              <h3>Local Database Backup & Restore (IndexedDB)</h3>
+              <h3>Local Database Backup & Restore (Firebase Active)</h3>
             </div>
             <div class="storage-notice">
-              <strong>Important Data Notice:</strong> All application data is stored locally on this specific browser and device using IndexedDB for 100% offline privacy and speed. Before switching phones, clearing browser cache, or reinstalling your browser, always export a JSON backup file.
+              <strong>Important Data Notice:</strong> The app is now connected to Firebase Firestore. Your data is synced to the cloud. You can still export JSON backups for your personal records.
             </div>
             <div class="backup-actions-grid">
               <div class="backup-box">
@@ -488,14 +488,9 @@
                   <input type="file" id="importJsonInput" accept=".json,application/json" hidden>
                 </label>
               </div>
-              <div class="backup-box">
-                <h4>Load Sample Pharma Engineering Data</h4>
-                <p>Populate realistic HVAC, Chiller, PW System, and Boiler tasks for testing.</p>
-                <button class="btn btn-outline" id="seedDemoDataBtn">Reload Sample Data</button>
-              </div>
               <div class="backup-box danger-box">
-                <h4>Factory Reset Local Database</h4>
-                <p>Permanently erase all records from this browser.</p>
+                <h4>Wipe Database</h4>
+                <p>Permanently erase all records from the database.</p>
                 <button class="btn btn-danger" id="clearAllDataBtn">Erase All Data</button>
               </div>
             </div>
@@ -778,6 +773,10 @@
 
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Firebase App (Core) and Firestore database added here -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <!-- Main Application Script -->
   <script src="./app.js"></script>
